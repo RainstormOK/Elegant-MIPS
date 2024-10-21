@@ -15,7 +15,8 @@ module mips (   input           clk, reset,
     wire [4:0] RsD, RtD, RsE, RtE;
     wire RegWriteE, RegWriteM;
     wire [4:0] WriteRegE, WriteRegM;
-    wire [1:0] ForwardAD, ForwardBD, ForwardAE, ForwardBE;
+    wire [2:0] ForwardAD, ForwardBD;
+    wire [1:0] ForwardAE, ForwardBE;
     wire MemtoRegE, MemtoRegM;
     wire StallF, StallD, BranchD, FlushE, ConditionD;
 

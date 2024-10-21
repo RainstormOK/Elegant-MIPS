@@ -1,7 +1,8 @@
 module hazard ( input       [4:0]   RsD, RtD, RsE, RtE,
                 input               RegWriteE, RegWriteM, RegWriteW,
                 input       [4:0]   WriteRegE, WriteRegM, WriteRegW,
-                output reg  [1:0]   ForwardAD, ForwardBD, ForwardAE, ForwardBE,
+                output reg  [2:0]   ForwardAD, ForwardBD,
+                output reg  [1:0]   ForwardAE, ForwardBE,
                 input               MemtoRegE, MemtoRegM,
                 output              StallF, StallD,
                 input               BranchD,
@@ -29,28 +30,29 @@ module hazard ( input       [4:0]   RsD, RtD, RsE, RtE,
     assign LWStall = ((RsD == RtE) || (RtD == RtE)) && MemtoRegE;
 
     always @(*) begin
-        if      ((RsD != 0) && (RsD == WriteRegM) && RegWriteM)
-            ForwardAD <= 2'b10;
-        else if ((RsD != 0) && (RsD == WriteRegW) && RegWriteW)
-            ForwardAD <= 2'b01;
+        if          ((RsD != 0 && RsD == WriteRegE) && RegWriteE)
+            ForwardAD <= 3'b100;
+        else if     ((RsD != 0) && (RsD == WriteRegM) && RegWriteM)
+            ForwardAD <= 3'b010;
+        else if     ((RsD != 0) && (RsD == WriteRegW) && RegWriteW)
+            ForwardAD <= 3'b001;
         else
-            ForwardAD <= 2'b00;
+            ForwardAD <= 3'b000;
     end
 
     always @(*) begin
-        if      ((RtD != 0) && (RtD == WriteRegM) && RegWriteM)
-            ForwardBD <= 2'b10;
+        if      ((RtD != 0) && (RtD == WriteRegE) && RegWriteE)
+            ForwardBD <= 3'b100;
+        else if ((RtD != 0) && (RtD == WriteRegM) && RegWriteM)
+            ForwardBD <= 3'b010;
         else if ((RtD != 0) && (RtD == WriteRegW) && RegWriteW)
-            ForwardBD <= 2'b01;
+            ForwardBD <= 3'b001;
         else
-            ForwardBD <= 2'b00;
+            ForwardBD <= 3'b000;
     end
 
     wire BranchStall;
-    assign BranchStall = 
-                BranchD && RegWriteE && (RsD == WriteRegE || RtD == WriteRegE)
-                    ||
-                BranchD && MemtoRegM && (RsD == WriteRegM || RtD == WriteRegM);
+    assign BranchStall = BranchD && MemtoRegM && (RsD == WriteRegM || RtD == WriteRegM);
 
     assign {StallF, StallD,
             FlushE} = {3{LWStall || BranchStall}};

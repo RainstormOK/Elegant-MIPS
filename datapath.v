@@ -10,7 +10,8 @@ module datapath (   input           clk, reset,
                     output  [4:0]       RsD, RtD, RsE, RtE,
                     input               RegWriteE, RegWriteM,
                     output  [4:0]       WriteRegE, WriteRegM, WriteRegW,
-                    input   [1:0]       ForwardAD, ForwardBD, ForwardAE, ForwardBE,
+                    input   [2:0]       ForwardAD, ForwardBD,
+                    input   [1:0]       ForwardAE, ForwardBE,
                     input               MemtoRegE, MemtoRegM,
                     input               StallF, StallD,
                     input                       BranchD,
@@ -46,10 +47,10 @@ module datapath (   input           clk, reset,
     assign PCJumpD = {PCPlus4D[31:28], InstrD[25:0], 2'b00};
 
 	wire [31:0] ALUOutM;
-    mux3 #(32) muxCompareDataA (RsDataPD, ResultW, ALUOutM,
+    mux4 #(32) muxCompareDataA (RsDataPD, ResultW, ALUOutM, ALUOutE,
                                 ForwardAD,
                                 RsDataD);
-    mux3 #(32) muxCompareDataB (RtDataPD, ResultW, ALUOutM,
+    mux4 #(32) muxCompareDataB (RtDataPD, ResultW, ALUOutM, ALUOutE,
                                 ForwardBD,
                                 RtDataD);
 
