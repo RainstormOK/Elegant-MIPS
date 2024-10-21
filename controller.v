@@ -14,8 +14,21 @@ module controller ( input           clk, reset,
                     output              MemtoRegE, MemtoRegM,
                     output              StallF, StallD,
                     output                      BranchD,
-                    output              FlushE,
-                    input                   ConditionD);
+                    output              FlushE, FlushD,
+                    input                   ConditionD,
+                    input   [31:0]              PCF, PCD,
+                    output                      HitF, HitD,
+                    input   [31:0]              PCBranchD, PCJumpD,
+                    output  [3:0]               PCControls,
+                    output  [31:0]              PCCache);
+
+    predict p ( clk,
+                PCF, PCD,
+                HitF, HitD,
+                PCSrcD, JumpD,
+                PCBranchD, PCJumpD,
+                PCControls,
+                PCCache);
     
     wire MemtoRegD, MemWriteD, ALUSrcD, RegDstD, RegWriteD;
     wire [1:0] ALUOpD;
@@ -38,7 +51,13 @@ module controller ( input           clk, reset,
                 MemtoRegE, MemtoRegM,
                 StallF, StallD,
                 BranchD,
-                FlushE);
+                FlushE, FlushD,
+                HitF, HitD,
+                PCSrcD, JumpD);
+    
+    flopenrc #(1) fd (  clk, reset, FlushD, ~StallD,
+                        HitF,
+                        HitD);
     
     wire MemWriteE;
     floprc #(8) de (clk, reset, FlushE,

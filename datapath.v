@@ -15,17 +15,21 @@ module datapath (   input           clk, reset,
                     input               MemtoRegE, MemtoRegM,
                     input               StallF, StallD,
                     input                       BranchD,
-                    input               FlushE,
+                    input               FlushE, FlushD,
                     output                  ConditionD,
                     output  [31:0]                  WriteDataM,
                     input   [31:0]                  ReadDataM,
                     output  [31:0]                  PCF,
                     output  [31:0]                      PCW,
-                    output  [31:0]                      ResultW, ALUOutM);
+                    output  [31:0]                      ResultW, ALUOutM,
+                    output  [31:0]                          PCD,
+                    output  [31:0]                          PCBranchD, PCJumpD, 
+                    input   [31:0]                          PCControls,
+                    input   [31:0]                          PCCache);
     
 	wire [31:0] PCPlus4F, PCBranchD, PCJumpD, PC;
-    mux3 #(32) muxPC (  PCPlus4F, PCBranchD, PCJumpD,
-                        {JumpD, PCSrcD},
+    mux5 #(32) muxPC (  PCPlus4F, PCCache, PCJumpD, PCBranchD, PCPlus4D,
+                        PCControls,
                         PC);
     
 	wire [31:0] PCF;
@@ -90,7 +94,7 @@ module datapath (   input           clk, reset,
                         PCF);    
     
 	wire [31:0] PCD, PCE, PCM;
-    flopenrc #(96) fd ( clk, reset, PCSrcD | JumpD, ~StallD,
+    flopenrc #(96) fd ( clk, reset, FlushD, ~StallD,
                         {InstrF, PCPlus4F, PCF},
                         {InstrD, PCPlus4D, PCD});
     

@@ -6,7 +6,9 @@ module hazard ( input       [4:0]   RsD, RtD, RsE, RtE,
                 input               MemtoRegE, MemtoRegM,
                 output              StallF, StallD,
                 input               BranchD,
-                output              FlushE);
+                output              FlushE, FlushD,
+                input               HitF, HitD,
+                input               PCSrcD, JumpD);
 
     always @(*) begin
         if      ((RsE != 0) && (RsE == WriteRegM) && RegWriteM)
@@ -56,4 +58,11 @@ module hazard ( input       [4:0]   RsD, RtD, RsE, RtE,
 
     assign {StallF, StallD,
             FlushE} = {3{LWStall || BranchStall}};
+    
+    assign FlushD =
+                HitD && (~PCSrcD)
+                    ||
+                (~HitD) && PCSrcD
+                    ||
+                (~HitD) && JumpD;
 endmodule

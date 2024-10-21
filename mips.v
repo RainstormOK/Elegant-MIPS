@@ -19,6 +19,11 @@ module mips (   input           clk, reset,
     wire [1:0] ForwardAE, ForwardBE;
     wire MemtoRegE, MemtoRegM;
     wire StallF, StallD, BranchD, FlushE, ConditionD;
+    wire [31:0] PCD;
+    wire HitF, HitD;
+    wire [31:0] PCBranchD, PCJumpD;
+    wire [3:0] PCControls;
+    wire [31:0] PCCache;
 
     controller c (  clk, reset,
                     InstrD[31:26], InstrD[5:0],
@@ -35,8 +40,13 @@ module mips (   input           clk, reset,
                         MemtoRegE, MemtoRegM,
                         StallF, StallD,
                                 BranchD,
-                        FlushE,
-                            ConditionD);
+                        FlushE, FlushD,
+                            ConditionD,
+                                PCF, PCD,
+                                HitF, HitD,
+                                PCBranchD, PCJumpD,
+                                PCControls,
+                                PCCache);
     
     datapath dp (   clk, reset,
                     InstrF,
@@ -54,11 +64,15 @@ module mips (   input           clk, reset,
                         MemtoRegE, MemtoRegM,
                         StallF, StallD,
                         BranchD,
-                        FlushE,
+                        FlushE, FlushD,
                             ConditionD,
                                     WriteDataM,
                                     ReadDataM,
                                     PCF,
                                         PCW,
-                                        ResultW, ALUOutM);
+                                        ResultW, ALUOutM,
+                                            PCD,
+                                            PCBranchD, PCJumpD,
+                                            PCControls,
+                                            PCCache);
 endmodule
