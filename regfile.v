@@ -7,7 +7,7 @@ module regfile (input clk,
     reg [31:0] rf[31:0];
 
     always @(posedge clk) begin
-        if (we3) rf[wa3] <= wd3;
+        if (we3 && wa3 != 0) rf[wa3] <= wd3;
     end
 
     assign rd1 = (ra1 != 0) ? rf[ra1] : 0;

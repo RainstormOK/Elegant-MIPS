@@ -9,16 +9,27 @@ module mips (   input           clk, reset,
                 output  [4:0]       WriteRegW,
                 output  [31:0]      ResultW);
 
-    controller c (  InstrD[31:26], InstrD[5:0],
+    wire [31:0] InstrD;
+    wire MemtoRegW, PCSrcD, ALUSrcE, RegDstE, JumpD;
+    wire [2:0] ALUControlE;
+    wire [4:0] RsD, RtD, RsE, RtE;
+    wire RegWriteE, RegWriteM;
+    wire [4:0] WriteRegE, WriteRegM;
+    wire [1:0] ForwardAD, ForwardBD, ForwardAE, ForwardBE;
+    wire MemtoRegE, MemtoRegM;
+    wire StallF, StallD, BranchD, FlushE, ConditionD;
+
+    controller c (  clk, reset,
+                    InstrD[31:26], InstrD[5:0],
                     MemtoRegW, MemWriteM,
                     PCSrcD, ALUSrcE,
                     RegDstE,
                                 RegWriteW,
                     JumpD,
                     ALUControlE,
-                        RsD[4:0], RtD[4:0], RsE[4:0], RtE[4:0],
+                        RsD, RtD, RsE, RtE,
                         RegWriteE, RegWriteM, 
-                        WriteRegE[4:0], WriteRegM[4:0], WriteRegW[4:0],
+                        WriteRegE, WriteRegM, WriteRegW,
                         ForwardAD, ForwardBD, ForwardAE, ForwardBE,
                         MemtoRegE, MemtoRegM,
                         StallF, StallD,
@@ -27,6 +38,7 @@ module mips (   input           clk, reset,
                             ConditionD);
     
     datapath dp (   clk, reset,
+                    InstrF,
                     InstrD,
                     MemtoRegW, MemWriteM,
                     PCSrcD, ALUSrcE,
@@ -34,9 +46,9 @@ module mips (   input           clk, reset,
                                 RegWriteW,
                     JumpD,
                     ALUControlE,
-                        RsD[4:0], RtD[4:0], RsE[4:0], RtE[4:0],
+                        RsD, RtD, RsE, RtE,
                         RegWriteE, RegWriteM, 
-                        WriteRegE[4:0], WriteRegM[4:0], WriteRegW[4:0],
+                        WriteRegE, WriteRegM, WriteRegW,
                         ForwardAD, ForwardBD, ForwardAE, ForwardBE,
                         MemtoRegE, MemtoRegM,
                         StallF, StallD,
@@ -47,5 +59,5 @@ module mips (   input           clk, reset,
                                     ReadDataM,
                                     PCF,
                                         PCW,
-                                        ResultW);
+                                        ResultW, ALUOutM);
 endmodule

@@ -1,8 +1,8 @@
-module alu (input       [31:0]  a, b,
+module alumod (input       [31:0]  a, b,
             input       [2:0]   alucontrol,
             output reg  [31:0]  result);
     
-    wire sll, cmp;
+    wire [31:0] cmp, sll;
     wire eq, neq, lt, lte, gt, gte, slt, slte, sgt, sgte;
 
     assign sll = (a < b);

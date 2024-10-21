@@ -1,4 +1,4 @@
-module branchcond ( input   [5:0]   OpD
+module branchcond ( input   [5:0]   OpD,
                     output          ConditionD,
                     input   [31:0]  RsDataD, RtDataD,
                     input   [4:0]   RtD);

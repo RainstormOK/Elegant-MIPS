@@ -1,6 +1,6 @@
 module aludec ( input       [5:0] FunctD,
                 input       [1:0] ALUOpD,
-                output reg  [2:0] ALUControlD;);
+                output reg  [2:0] ALUControlD);
 
     always @(*) begin
         case (ALUOpD)

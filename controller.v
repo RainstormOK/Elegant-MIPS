@@ -1,4 +1,5 @@
-module controller ( input   [5:0]   OpD, FunctD,    
+module controller ( input           clk, reset,
+                    input   [5:0]   OpD, FunctD,    
                     output          MemtoRegW, MemWriteM,
                     output          PCSrcD, ALUSrcE,
                     output          RegDstE,
@@ -8,7 +9,7 @@ module controller ( input   [5:0]   OpD, FunctD,
                     input   [4:0]       RsD, RtD, RsE, RtE,
                     output              RegWriteE, RegWriteM, 
                     input   [4:0]       WriteRegE, WriteRegM, WriteRegW,
-                    output              ForwardAD, ForwardBD,
+                    output  [1:0]       ForwardAD, ForwardBD,
                     output  [1:0]       ForwardAE, ForwardBE,
                     output              MemtoRegE, MemtoRegM,
                     output              StallF, StallD,
@@ -16,6 +17,8 @@ module controller ( input   [5:0]   OpD, FunctD,
                     output              FlushE,
                     input                   ConditionD);
     
+    wire MemtoRegD, MemWriteD, ALUSrcD, RegDstD, RegWriteD;
+    wire [1:0] ALUOpD;
     maindec md (OpD,
                 MemtoRegD, MemWriteD,
                 BranchD, ALUSrcD,
@@ -23,6 +26,7 @@ module controller ( input   [5:0]   OpD, FunctD,
                 JumpD,
                 ALUOpD);
     
+    wire [2:0] ALUControlD;
     aludec ad ( FunctD, ALUOpD, ALUControlD);
 
     assign PCSrcD = BranchD & ConditionD;
@@ -36,6 +40,7 @@ module controller ( input   [5:0]   OpD, FunctD,
                 BranchD,
                 FlushE);
     
+    wire MemWriteE;
     floprc #(8) de (clk, reset, FlushE,
                     {RegWriteD, MemtoRegD, MemWriteD, ALUControlD, ALUSrcD, RegDstD},
                     {RegWriteE, MemtoRegE, MemWriteE, ALUControlE, ALUSrcE, RegDstE});

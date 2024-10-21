@@ -22,7 +22,7 @@ module hazard ( input       [4:0]   RsD, RtD, RsE, RtE,
         else if ((RtE != 0) && (RtE == WriteRegW) && RegWriteW)
             ForwardBE <= 2'b01;
         else
-            ForwardAE <= 2'b00;
+            ForwardBE <= 2'b00;
     end
 
     wire LWStall;

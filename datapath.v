@@ -1,5 +1,6 @@
 module datapath (   input           clk, reset,
-                    input   [31:0]  InstrD
+                    input   [31:0]  InstrF,
+                    output  [31:0]  InstrD,
                     input           MemtoRegW, MemWriteM,
                     input           PCSrcD, ALUSrcE,
                     input           RegDstE,
@@ -19,59 +20,66 @@ module datapath (   input           clk, reset,
                     input   [31:0]                  ReadDataM,
                     output  [31:0]                  PCF,
                     output  [31:0]                      PCW,
-                    output  [31:0]                      ResultW);
+                    output  [31:0]                      ResultW, ALUOutM);
     
+	wire [31:0] PCPlus4F, PCBranchD, PCJumpD, PC;
     mux3 #(32) muxPC (  PCPlus4F, PCBranchD, PCJumpD,
                         {JumpD, PCSrcD},
                         PC);
     
+	wire [31:0] PCF;
     assign PCPlus4F = PCF + 4;
 
+	wire [4:0] RdD;
     assign {RsD, RtD, RdD} = InstrD[25:11];
 
+	wire [31:0] RsDataD, RtDataD, RsDataPD, RtDataPD;
     regfile rf (clk,
                 RegWriteW,
-                RsD, RtD, RdD,
+                RsD, RtD, WriteRegW,
                 ResultW,
-                RsDataD, RtDataD);
+                RsDataPD, RtDataPD);
 
-    assign SignImmD = {16{InstrD[15]},InstrD[15:0]};
+	wire [31:0] SignImmD, PCBranchD, PCJumpD, PCPlus4D;
+    assign SignImmD = {{16{InstrD[15]}},InstrD[15:0]};
     assign PCBranchD = PCPlus4D + (SignImmD << 2);
     assign PCJumpD = {PCPlus4D[31:28], InstrD[25:0], 2'b00};
 
-    mux3 #(32) muxCompareDataA (RsDataD, ResultW, ALUOutM,
+	wire [31:0] ALUOutM;
+    mux3 #(32) muxCompareDataA (RsDataPD, ResultW, ALUOutM,
                                 ForwardAD,
-                                CompareDataA);
-
-    mux3 #(32) muxCompareDataB (RtDataD, ResultW, ALUOutM,
+                                RsDataD);
+    mux3 #(32) muxCompareDataB (RtDataPD, ResultW, ALUOutM,
                                 ForwardBD,
-                                CompareDataB);
+                                RtDataD);
 
     branchcond bc ( InstrD[31:26],
                     ConditionD,
-                    CompareDataA, CompareDataB,
+                    RsDataD, RtDataD,
                     RtD);
     
+	wire [31:0] RsDataE, SrcAE, RtDataE, SrcBPE, SignImmE, SrcBE;
     mux3 #(32) muxSrcAE (   RsDataE, ResultW, ALUOutM,
                             ForwardAE,
                             SrcAE);
-
     mux3 #(32) muxSrcBPE (  RtDataE, ResultW, ALUOutM,
                             ForwardBE,
                             SrcBPE);
-    
     mux2 #(32) muxSrcBE (   SrcBPE, SignImmE,
                             ALUSrcE,
                             SrcBE);
     
-    alu a ( SrcAE, SrcBE,
-            ALUControlE,
-            ALUOutE);
+	wire [31:0] ALUOutE;
+    alumod am (	SrcAE, SrcBE,
+            	ALUControlE,
+            	ALUOutE);
     
+	wire [4:0] RdE;
     mux2 #(5) muxWriteRegE (RtE, RdE,
                             RegDstE,
                             WriteRegE);
     
+	wire [31:0] AluOutW, ReadDataW;
     mux2 #(32) muxResultW ( AluOutW, ReadDataW,
                             MemtoRegW,
                             ResultW);
@@ -80,14 +88,16 @@ module datapath (   input           clk, reset,
                         PC,
                         PCF);    
     
+	wire [31:0] PCD, PCE, PCM;
     flopenrc #(96) fd ( clk, reset, PCSrcD | JumpD, ~StallD,
                         {InstrF, PCPlus4F, PCF},
                         {InstrD, PCPlus4D, PCD});
     
     floprc #(143) de (   clk, reset, FlushE,
                         {RsDataD, RtDataD, RsD, RtD, RdD, SignImmD, PCD},
-                        {RsDataE, RtDataE, RsE, RtE, RtE, SignImmE, PCE});
+                        {RsDataE, RtDataE, RsE, RtE, RdE, SignImmE, PCE});
     
+	wire [31:0] WriteDataE;
     flopr #(101) em (clk, reset,
                     {ALUOutE, WriteDataE, WriteRegE, PCE},
                     {ALUOutM, WriteDataM, WriteRegM, PCM});

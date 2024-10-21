@@ -13,6 +13,9 @@ module cpu (input           clk,
             output  [4:0]   debug_wb_rf_wnum,
             output  [31:0]  debug_wb_rf_wdata);
     
+    wire stall;
+    reg cnt;
+    
     mips mips ( clk, ~resetn,
                 inst_sram_addr,
                 inst_sram_rdata,
@@ -20,9 +23,11 @@ module cpu (input           clk,
                 data_sram_addr, data_sram_wdata,
                 data_sram_rdata,
                     debug_wb_pc,
-                    debug_wb_rf_wen,
-                    debug_wb_rf_wum,
+                    debug_wb_rf_wen_p,
+                    debug_wb_rf_wnum,
                     debug_wb_rf_wdata);
     
     assign {inst_sram_en, data_sram_en} = 2'b11;
+    assign debug_wb_rf_wen = debug_wb_rf_wen_p & (debug_wb_rf_wnum != 0);
+
 endmodule
